@@ -35,7 +35,7 @@ export function LoginForm({
       { email, password },
       {
         onSuccess: () => {
-          router.push("/")
+          router.push("/dashboard")
         },
         onError: (ctx) => {
           setError(ctx.error.message)
