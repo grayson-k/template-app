@@ -1,36 +1,163 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js App Template
 
-## Getting Started
+A full-stack starter template with authentication, a polished UI, and a connected Postgres database — ready to clone and build on top of.
 
-First, run the development server:
+## What's included
+
+- **[Next.js 16](https://nextjs.org)** — App Router, server components, and server actions
+- **[Better Auth](https://better-auth.com)** — Email/password authentication with session management, wired directly to your database
+- **[shadcn/ui](https://ui.shadcn.com)** — Accessible, composable UI components built on Radix UI
+- **[Tailwind CSS v4](https://tailwindcss.com)** — Utility-first styling with the new v4 engine
+- **[Neon](https://neon.tech) / PostgreSQL** — Serverless Postgres via the `pg` driver with connection pooling
+- **[Recharts](https://recharts.org)** — Chart components for data visualization
+- **[TanStack Table](https://tanstack.com/table)** — Headless, type-safe data tables
+- **[Zod](https://zod.dev)** — Schema validation
+- **[Sonner](https://sonner.emilkowal.ski)** — Toast notifications
+
+### Pages
+
+| Route | Description |
+|---|---|
+| `/` | Public landing/hero page |
+| `/login` | Login form |
+| `/signup` | Signup form |
+| `/dashboard` | Protected dashboard with sidebar, charts, and data table |
+
+Unauthenticated users attempting to access `/dashboard` are redirected to `/`.
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- A PostgreSQL database — [Neon](https://neon.tech) is recommended (free tier available) but any Postgres instance works
+
+---
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/template-app.git
+cd template-app
+```
+
+---
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+---
+
+### 3. Create your database
+
+If you're using Neon:
+
+1. Create a free account at [neon.tech](https://neon.tech)
+2. Create a new project
+3. Copy the **connection string** from the Neon dashboard — it looks like:
+   ```
+   postgresql://neondb_owner:<password>@<host>.neon.tech/neondb?sslmode=require
+   ```
+
+If you're using a local or hosted Postgres instance, grab your connection string from there instead.
+
+---
+
+### 4. Configure environment variables
+
+Copy the example env file:
+
+```bash
+cp .env.example .env
+```
+
+Then fill in your values:
+
+```env
+# Your Postgres connection string (Neon or any Postgres)
+DATABASE_URL="postgresql://neondb_owner:YOUR_PASSWORD@YOUR_HOST.neon.tech/neondb?sslmode=require"
+
+# A random secret used to sign auth sessions
+# Generate one with: openssl rand -base64 32
+BETTER_AUTH_SECRET=your_secret_here
+
+# The base URL of your app (use localhost for local dev)
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+---
+
+### 5. Run the database migration
+
+Better Auth manages its own schema (users, sessions, accounts, etc.). Run its migration to create those tables in your database:
+
+```bash
+npx better-auth migrate
+```
+
+This will connect to `DATABASE_URL` and create the required tables. You only need to do this once (and again after upgrading Better Auth).
+
+---
+
+### 6. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser. You should see the landing page. Create an account via `/signup` and you'll be redirected to the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```
+app/
+  page.tsx              # Landing page
+  layout.tsx            # Root layout
+  login/page.tsx        # Login page
+  signup/page.tsx       # Signup page
+  dashboard/page.tsx    # Protected dashboard (requires auth)
+components/
+  ui/                   # shadcn/ui base components
+  app-sidebar.tsx       # Dashboard sidebar
+  login-form.tsx
+  signup-form.tsx
+  hero-section.tsx
+  ...
+lib/
+  auth.ts               # Better Auth server config
+  auth-client.ts        # Better Auth browser client
+  db.ts                 # Postgres connection pool
+  utils.ts              # Utility helpers (cn, etc.)
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This template is ready to deploy on [Vercel](https://vercel.com). When deploying:
 
-## Deploy on Vercel
+1. Add your environment variables (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) in the Vercel project settings
+2. Set `BETTER_AUTH_URL` to your production domain (e.g. `https://your-app.vercel.app`)
+3. Make sure your Neon database allows connections from Vercel's IP ranges (Neon does this by default)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+vercel deploy
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start local development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
