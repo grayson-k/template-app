@@ -1,4 +1,9 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -12,8 +17,46 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    const confirmPassword = formData.get("confirm-password") as string
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    setPending(true)
+    await authClient.signUp.email(
+      { name, email, password },
+      {
+        onSuccess: () => {
+          router.push("/")
+        },
+        onError: (ctx) => {
+          setError(ctx.error.message)
+        },
+      }
+    )
+    setPending(false)
+  }
+
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form
+      className={cn("flex flex-col gap-6", className)}
+      onSubmit={handleSubmit}
+      {...props}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -25,6 +68,7 @@ export function SignupForm({
           <FieldLabel htmlFor="name">Full Name</FieldLabel>
           <Input
             id="name"
+            name="name"
             type="text"
             placeholder="John Doe"
             required
@@ -35,6 +79,7 @@ export function SignupForm({
           <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
             id="email"
+            name="email"
             type="email"
             placeholder="m@example.com"
             required
@@ -49,6 +94,7 @@ export function SignupForm({
           <FieldLabel htmlFor="password">Password</FieldLabel>
           <Input
             id="password"
+            name="password"
             type="password"
             required
             className="bg-background"
@@ -61,17 +107,23 @@ export function SignupForm({
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
           <Input
             id="confirm-password"
+            name="confirm-password"
             type="password"
             required
             className="bg-background"
           />
           <FieldDescription>Please confirm your password.</FieldDescription>
         </Field>
+        {error && (
+          <p className="text-sm text-destructive text-center">{error}</p>
+        )}
         <Field>
-          <Button type="submit">Create Account</Button>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Creating account..." : "Create Account"}
+          </Button>
         </Field>
         <FieldDescription className="px-6 text-center">
-          Already have an account? <a href="#">Sign in</a>
+          Already have an account? <a href="/login">Sign in</a>
         </FieldDescription>
       </FieldGroup>
     </form>
