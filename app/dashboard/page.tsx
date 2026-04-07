@@ -12,7 +12,7 @@ import data from "./data.json"
 
 export default async function Page() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) {
+if (!session) {
     redirect("/")
   }
   return (
@@ -24,7 +24,14 @@ export default async function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar
+        variant="inset"
+        user={{
+          name: session.user.name,
+          email: session.user.email,
+          avatar: session.user.image ?? "",
+        }}
+      />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
